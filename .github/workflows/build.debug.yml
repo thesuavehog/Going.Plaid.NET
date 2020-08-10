@@ -37,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.2
         with:
-          fetch-depth: 100
+          fetch-depth: 0
       - name: Update Project Metadata
         run: |
           [xml]$xml = Get-Content $env:PROJECT_MAIN
