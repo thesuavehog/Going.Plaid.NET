@@ -51,38 +51,22 @@ jobs:
           # Set Project Url so that it's clear in NuGet properties this is either the root or a fork
           $xml.SelectNodes("//PropertyGroup/PackageProjectUrl") | % { $_."#text" = $env:PROJECT_URL }
           echo "PackageProjectUrl: $($env:PROJECT_URL)"
-          #
-          # Append the build number to the Assembly Version
-          $version = "$($xml.SelectNodes('//PropertyGroup/Version').'#text').$($env:GITHUB_RUN_NUMBER)"
-          if ($version -eq '') { Write-Error "Missing Version Number" }
-          #
-          # Packaging (NuGet) Version (x.x.x.x[-beta])
-          $xml.SelectNodes("//PropertyGroup/Version") | % { $_."#text" = "$($version)-beta" }
-          echo "Version: $($xml.SelectNodes('//PropertyGroup/Version').'#text')"
-          $xml.SelectNodes("//PropertyGroup/PackageVersion") | % { $_."#text" = "$($version)-beta" }
-          echo "PackageVersion: $($xml.SelectNodes('//PropertyGroup/PackageVersion').'#text')"
-          #
-          # Assembly Version (x.x.x.x)
-          $xml.SelectNodes("//PropertyGroup/AssemblyVersion") | % { $_."#text" = $version }
-          echo "AssemblyVersion: $($xml.SelectNodes('//PropertyGroup/AssemblyVersion').'#text')"
-          $xml.SelectNodes("//PropertyGroup/AssemblyFileVersion") | % { $_."#text" = $version }
-          echo "AssemblyFileVersion: $($xml.SelectNodes('//PropertyGroup/AssemblyFileVersion').'#text')"
           # 
           # Save Updated .csproj File
           $xml.Save($env:PROJECT_MAIN)
-      - name: Extract Project Metadata
+          $projectName = "$($env:GITHUB_REPOSITORY)".Split('/',2)[1]
+          echo "::set-env name=PROJECT_NAME::$($projectName)"
+      - name: Build
+        run: dotnet build --configuration $env:BUILD_CONFIGURATION $env:PROJECT_MAIN
+      - name: Extract Metadata
         run: |
           [xml]$xml = Get-Content $env:PROJECT_MAIN;
           $val = $xml.SelectNodes('//PropertyGroup/AssemblyName') | Select-Object -Expand '#text'
           echo "ASSEMBLY_NAME: $($val)"
           echo "::set-env name=ASSEMBLY_NAME::$($val)"
-          $val = $xml.SelectNodes('//PropertyGroup/Version') | Select-Object -Expand '#text'
+          $val = (Get-Item "${{ env.PROJECT_BIN }}/${{ env.BUILD_CONFIGURATION }}/netcoreapp3.1/${{ env.PROJECT_NAME }}.dll)."ersionInfo.FileVersion
           echo "NUGET_VERSION: $($val)"
           echo "::set-env name=NUGET_VERSION::$($val)"
-          $val = "$($env:GITHUB_REPOSITORY)".Split('/',2)[1]
-          echo "::set-env name=PROJECT_NAME::$($val)"
-      - name: Build
-        run: dotnet build --configuration $env:BUILD_CONFIGURATION $env:PROJECT_MAIN
       - name: Upload Build Output Artifact
         uses: actions/upload-artifact@v2.1.3
         with:
