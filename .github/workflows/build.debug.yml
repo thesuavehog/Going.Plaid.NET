@@ -64,7 +64,7 @@ jobs:
           $val = $xml.SelectNodes('//PropertyGroup/AssemblyName') | Select-Object -Expand '#text'
           echo "ASSEMBLY_NAME: $($val)"
           echo "::set-env name=ASSEMBLY_NAME::$($val)"
-          $val = (Get-Item "${{ env.PROJECT_BIN }}/${{ env.BUILD_CONFIGURATION }}/netcoreapp3.1/${{ env.PROJECT_NAME }}.dll)."ersionInfo.FileVersion
+          $val = (Get-Item "${{ env.PROJECT_BIN }}/${{ env.BUILD_CONFIGURATION }}/netcoreapp3.1/${{ env.PROJECT_NAME }}.dll").VersionInfo.FileVersion
           echo "NUGET_VERSION: $($val)"
           echo "::set-env name=NUGET_VERSION::$($val)"
       - name: Upload Build Output Artifact
