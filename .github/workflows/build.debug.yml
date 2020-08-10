@@ -55,6 +55,10 @@ jobs:
           # Save Updated .csproj File
           $xml.Save($env:PROJECT_MAIN)
           $projectName = "$($env:GITHUB_REPOSITORY)".Split('/',2)[1]
+          #
+          # TODO: the project name in csproj is not set to the same as the GitHub name so overriding this manually...
+          #
+          $projectName = "Going.Plaid"
           echo "::set-env name=PROJECT_NAME::$($projectName)"
       - name: Build
         run: dotnet build --configuration $env:BUILD_CONFIGURATION $env:PROJECT_MAIN
